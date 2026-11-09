@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dart_my/model/to_do.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,8 +12,21 @@ class ToDoController {
 
     await getTodos();
   }
+  
+  static Future<void> saveTodos() async {
+    await prefs.setString('todos', jsonEncode(todos));
+  }
 
   static Future<void> getTodos() async {
-    final json = await prefs.getString('todos');
+    final todoJson = prefs.getString('todos');
+    if (todoJson != null) {
+      final List<dynamic> json = jsonDecode(todoJson);
+      final List<ToDo> todoList = [];
+      for (var i in json) {
+        final t = ToDo.fromJson(json[i]);
+        todoList.add(t);
+      }
+      todos.addAll(todoList.toList());
+    }
   }
 }
