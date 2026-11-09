@@ -12,21 +12,25 @@ class ToDoController {
 
     await getTodos();
   }
-  
+
+  static Future<void> deleteTodo(int id) async {
+    todos.removeWhere((e) => e.id == id);
+    await saveTodos();
+    await getTodos();
+  }
+
   static Future<void> saveTodos() async {
-    await prefs.setString('todos', jsonEncode(todos));
+    await prefs.setString(
+      'todos',
+      jsonEncode(todos.map((e) => e.toJson()).toList()),
+    );
   }
 
   static Future<void> getTodos() async {
     final todoJson = prefs.getString('todos');
     if (todoJson != null) {
       final List<dynamic> json = jsonDecode(todoJson);
-      final List<ToDo> todoList = [];
-      for (var i in json) {
-        final t = ToDo.fromJson(json[i]);
-        todoList.add(t);
-      }
-      todos.addAll(todoList.toList());
+      todos = json.map((e) => ToDo.fromJson(e)).toList();
     }
   }
 }

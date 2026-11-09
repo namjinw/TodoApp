@@ -1,5 +1,6 @@
 import 'package:dart_my/controller/to_do_controller.dart';
 import 'package:dart_my/model/to_do.dart';
+import 'package:dart_my/page/home.dart';
 import 'package:dart_my/util.dart';
 import 'package:flutter/material.dart';
 
@@ -22,33 +23,8 @@ class MyApp extends StatelessWidget {
         fontFamily: fonts,
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MainPage(),
+      home: const HomePage(),
     );
   }
 }
 
-class MainPage extends StatefulWidget {
-  const MainPage({super.key});
-
-  @override
-  State<MainPage> createState() => _MainPageState();
-}
-
-class _MainPageState extends State<MainPage> {
-
-  List<ToDo> todos = ToDoController.todos;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: content(),
-    );
-  }
-
-  Widget content() => SafeArea(
-    child: Column(
-      children: [
-      ],
-    ),
-  );
-}
