@@ -14,8 +14,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<ToDo> todos = ToDoController.todos;
-  final DateTime today = DateTime.now();
+  DateTime selected = DateTime.now();
   DateTime now = DateTime.now();
+  final PageController pageController = PageController(initialPage: 12);
 
   List<DateTime> getDate(DateTime d) {
     final first = DateTime(d.year, d.month, 1);
@@ -27,7 +28,7 @@ class _HomePageState extends State<HomePage> {
 
     List.generate(
       prev,
-      (index) => dates.add(first.subtract(Duration(days: index + 1))),
+      (index) => dates.add(first.subtract(Duration(days: prev - index))),
     );
     List.generate(
       last.day,
@@ -37,8 +38,6 @@ class _HomePageState extends State<HomePage> {
       next,
       (index) => dates.add(DateTime(d.year, d.month + 1, index + 1)),
     );
-
-    print(dates);
 
     return dates;
   }
@@ -52,7 +51,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget content() => SafeArea(child: Column(children: [calender()]));
+  Widget content() => SafeArea(
+    child: SingleChildScrollView(child: Column(children: [calender()])),
+  );
 
   Widget calender() {
     final dates = getDate(now);
@@ -63,27 +64,38 @@ class _HomePageState extends State<HomePage> {
           style: TextStyle(fontWeight: .bold, fontSize: 32),
           '${now.year}, ${now.month}',
         ),
-        SizedBox(
-          height: 400,
-          child: GridView(
-            padding: .zero,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-            ),
-            children: .generate(dates.length, (index) {
-              final date = dates[index];
-              return Center(
-                child: Text(
-                  '${date.day}',
-                  style: TextStyle(
-                    color: date.month != today.month
-                        ? Colors.grey
-                        : Colors.black,
-                    fontSize: 20,
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: .circular(40),
+          ),
+          height: 350,
+          child: PageView.builder(
+            controller: pageController,
+            onPageChanged: (value) {
+              now = DateTime(now.year, now.month + (value - 12));
+              setState(() {});
+            },
+            itemBuilder: (context, index) => GridView(
+              padding: .symmetric(horizontal: 30),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+              ),
+              children: .generate(dates.length, (index) {
+                final date = dates[index];
+                return Center(
+                  child: Text(
+                    '${date.day}',
+                    style: TextStyle(
+                      color: date.month != now.month
+                          ? Colors.grey
+                          : Colors.black,
+                      fontSize: 20,
+                    ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ),
           ),
         ),
       ],
