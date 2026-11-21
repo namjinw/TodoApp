@@ -10,3 +10,16 @@ const Color infoText = Color(0xFF5A5A5A);
 const Color border = Color(0xff27485f);
 const Color focusBorder = Color(0xff0799ff);
 const Color errorBorder = Color(0xfff54659);
+
+const List<Color> colors = [
+  Colors.redAccent,
+  Colors.orangeAccent,
+  Colors.yellowAccent,
+  Colors.lightGreenAccent,
+  Colors.greenAccent,
+  Colors.lightBlueAccent,
+  Colors.blueAccent,
+  Colors.pinkAccent,
+  Colors.purpleAccent,
+  Colors.deepPurpleAccent,
+];

@@ -1,3 +1,4 @@
+import 'package:dart_my/page/detail.dart';
 import 'package:dart_my/page/write.dart';
 import 'package:dart_my/util/color.dart';
 import 'package:dart_my/util/func.dart';
@@ -17,7 +18,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<ToDo> todos = ToDoController.todos;
   late List<ToDo> todayTodo;
 
   DateTime selectedDate = DateTime.now(); // 선택된 날짜
@@ -25,11 +25,21 @@ class _HomePageState extends State<HomePage> {
 
   final PageController pageController = PageController(initialPage: 12);
 
+  // 할일 날짜랑 오늘 날짜랑 비교해서 오늘 할일만 가져와 리스트로 만들기
+  void checkToday() => todayTodo = ToDoController.todos.value
+      .where(
+        (t) =>
+            t.date.year == today.year &&
+            t.date.month == today.month &&
+            t.date.day == today.day,
+      )
+      .toList();
+
   @override
   void initState() {
     super.initState();
-    // 할일 날짜랑 오늘 날짜랑 비교해서 오늘 할일만 가져와 리스트로 만들기
-    todayTodo = todos.where((t) => t.date == today).toList();
+    ToDoController.todos.addListener(checkToday);
+    checkToday();
   }
 
   @override
@@ -44,15 +54,18 @@ class _HomePageState extends State<HomePage> {
   Widget content() => SafeArea(
     child: SingleChildScrollView(
       padding: .symmetric(horizontal: 15),
-      child: Column(
-        spacing: 30,
-        crossAxisAlignment: .start,
-        children: [calendar(), todoItems()],
+      child: ValueListenableBuilder(
+        valueListenable: ToDoController.todos,
+        builder: (context, value, child) => Column(
+          spacing: 30,
+          crossAxisAlignment: .start,
+          children: [calendar(value), todoItems(value)],
+        ),
       ),
     ),
   );
 
-  Widget todoItems() => Column(
+  Widget todoItems(todos) => Column(
     crossAxisAlignment: .start,
     children: [
       Text(
@@ -61,12 +74,12 @@ class _HomePageState extends State<HomePage> {
       ),
       SizedBox(height: 12),
       Container(
-        width: sizew(context),
         decoration: BoxDecoration(color: action, borderRadius: .circular(18)),
         padding: .symmetric(horizontal: 15, vertical: 20),
         child: todayTodo.isEmpty
             ? notItem()
             : Column(
+                spacing: 15,
                 children: .generate(
                   todayTodo.length,
                   (index) => todoCard(todayTodo[index]),
@@ -93,43 +106,69 @@ class _HomePageState extends State<HomePage> {
   );
 
   Widget todoCard(ToDo item) => Container(
-    decoration: BoxDecoration(color: item.color, borderRadius: .circular(12)),
-    padding: .all(8),
+    decoration: BoxDecoration(color: secondary, borderRadius: .circular(12)),
+    padding: .all(12),
     child: Column(
+      spacing: 10,
       crossAxisAlignment: .start,
       children: [
-        Text(
-          item.title,
-          style: TextStyle(
-            fontWeight: .bold,
-            fontSize: 24,
-            color: Colors.white,
-          ),
+        Row(
+          spacing: 10,
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: item.color,
+                borderRadius: .circular(4),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                item.title,
+                maxLines: 1,
+                overflow: .ellipsis,
+                style: TextStyle(
+                  fontWeight: .bold,
+                  fontSize: 24,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
         ),
-        item.tag.isNotEmpty
-            ? ListView.builder(
-                scrollDirection: .horizontal,
-                physics: BouncingScrollPhysics(),
-                itemCount: item.tag.length,
-                itemBuilder: (context, index) => Container(
+        if (item.tag.isNotEmpty)
+          SingleChildScrollView(
+            scrollDirection: .horizontal,
+            physics: BouncingScrollPhysics(),
+            child: Row(
+              children: .generate(
+                item.tag.length,
+                (index) => Container(
                   padding: .symmetric(horizontal: 15, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: primary,
                     borderRadius: .circular(6),
                   ),
                   child: Text(
                     item.tag[index],
-                    style: TextStyle(fontWeight: .bold),
+                    style: TextStyle(color: Colors.white, fontWeight: .bold),
                   ),
                 ),
-              )
-            : SizedBox(),
-        Text(item.content),
+              ),
+            ),
+          ),
+        Container(
+          width: sizew(context),
+          padding: .all(10),
+          decoration: BoxDecoration(color: fill, borderRadius: .circular(8)),
+          child: Text(item.content),
+        ),
       ],
     ),
   );
 
-  Widget calendar() {
+  Widget calendar(todos) {
     final dates = getCalendarDays(focusMonth);
 
     return Column(
@@ -141,7 +180,8 @@ class _HomePageState extends State<HomePage> {
         SizedBox(height: 10),
         Container(
           decoration: BoxDecoration(color: action, borderRadius: .circular(18)),
-          height: 350,
+          height: 410,
+          padding: .all(10),
           child: PageView.builder(
             controller: pageController,
             onPageChanged: (value) {
@@ -152,23 +192,18 @@ class _HomePageState extends State<HomePage> {
               setState(() {});
             },
             itemBuilder: (context, index) => GridView(
+              padding: .zero,
+              physics: NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 7,
+                mainAxisExtent: 60,
+                crossAxisSpacing: 5,
+                mainAxisSpacing: 5,
               ),
-              children: .generate(dates.length, (index) {
-                final date = dates[index];
-                return Center(
-                  child: Text(
-                    '${date.day}',
-                    style: TextStyle(
-                      color: date.month != focusMonth.month
-                          ? Colors.grey
-                          : Colors.black,
-                      fontSize: 20,
-                    ),
-                  ),
-                );
-              }),
+              children: .generate(
+                dates.length,
+                (index) => dateItem(dates[index], todos),
+              ),
             ),
           ),
         ),
@@ -176,10 +211,79 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget dateItem(DateTime date, List<ToDo> todos) {
+    final list = todos
+        .where(
+          (e) =>
+              e.date.year == date.year &&
+              e.date.month == date.month &&
+              e.date.day == date.day,
+        )
+        .toList();
+    final dayTodos = list.length > 3 ? list.sublist(1, 3) : list;
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        CupertinoPageRoute(builder: (context) => DetailPage(date: date)),
+      ),
+      child: Container(
+        padding: .only(left: 6, top: 5),
+        decoration: BoxDecoration(
+          color: fill,
+          borderRadius: .circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(50),
+              blurRadius: 2,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          spacing: 6,
+          crossAxisAlignment: .start,
+          mainAxisAlignment: .start,
+          children: [
+            Text(
+              '${date.day}',
+              overflow: .ellipsis,
+              maxLines: 1,
+              style: TextStyle(
+                fontWeight: .bold,
+                color: date.month != focusMonth.month
+                    ? Colors.grey
+                    : Colors.black,
+                fontSize: 18,
+              ),
+            ),
+            Row(
+              crossAxisAlignment: .start,
+              spacing: 3,
+              children: .generate(
+                dayTodos.length,
+                (index) => Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: dayTodos[index].color,
+                    borderRadius: .circular(2),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   AppBar appBar() => AppBar(
     backgroundColor: Colors.transparent,
     leadingWidth: 100,
-    leading: Center(child: Text('ToDo', style: TextStyle(fontWeight: .bold, fontSize: 24))),
+    leading: Center(
+      child: Text('ToDo', style: TextStyle(fontWeight: .bold, fontSize: 24)),
+    ),
     actionsPadding: .only(right: 20),
     actions: [
       GestureDetector(
