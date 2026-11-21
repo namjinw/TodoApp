@@ -1,7 +1,6 @@
 import 'package:dart_my/controller/to_do_controller.dart';
-import 'package:dart_my/model/to_do.dart';
 import 'package:dart_my/page/home.dart';
-import 'package:dart_my/util.dart';
+import 'package:dart_my/util/util.dart';
 import 'package:flutter/material.dart';
 
 Future<void> main() async {

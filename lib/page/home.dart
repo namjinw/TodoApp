@@ -1,4 +1,8 @@
-import 'package:dart_my/util.dart';
+import 'package:dart_my/page/write.dart';
+import 'package:dart_my/util/color.dart';
+import 'package:dart_my/util/func.dart';
+import 'package:dart_my/util/util.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -14,70 +18,140 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<ToDo> todos = ToDoController.todos;
-  DateTime selected = DateTime.now();
-  DateTime now = DateTime.now();
+  late List<ToDo> todayTodo;
+
+  DateTime selectedDate = DateTime.now(); // 선택된 날짜
+  DateTime focusMonth = DateTime.now(); // 달력 날짜
+
   final PageController pageController = PageController(initialPage: 12);
 
-  List<DateTime> getDate(DateTime d) {
-    final first = DateTime(d.year, d.month, 1);
-    final last = DateTime(d.year, d.month + 1, 0);
-    final prev = first.weekday % 7;
-    final next = 42 - (prev + last.day);
-
-    List<DateTime> dates = [];
-
-    List.generate(
-      prev,
-      (index) => dates.add(first.subtract(Duration(days: prev - index))),
-    );
-    List.generate(
-      last.day,
-      (index) => dates.add(DateTime(d.year, d.month, index + 1)),
-    );
-    List.generate(
-      next,
-      (index) => dates.add(DateTime(d.year, d.month + 1, index + 1)),
-    );
-
-    return dates;
+  @override
+  void initState() {
+    super.initState();
+    // 할일 날짜랑 오늘 날짜랑 비교해서 오늘 할일만 가져와 리스트로 만들기
+    todayTodo = todos.where((t) => t.date == today).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: background,
+      backgroundColor: neutral,
       appBar: appBar(),
       body: content(),
     );
   }
 
   Widget content() => SafeArea(
-    child: SingleChildScrollView(child: Column(children: [calender()])),
+    child: SingleChildScrollView(
+      padding: .symmetric(horizontal: 15),
+      child: Column(
+        spacing: 30,
+        crossAxisAlignment: .start,
+        children: [calendar(), todoItems()],
+      ),
+    ),
   );
 
-  Widget calender() {
-    final dates = getDate(now);
+  Widget todoItems() => Column(
+    crossAxisAlignment: .start,
+    children: [
+      Text(
+        '${DateFormat('M월 d일').format(today)}',
+        style: TextStyle(fontSize: 32, fontWeight: .bold, color: primary),
+      ),
+      SizedBox(height: 12),
+      Container(
+        width: sizew(context),
+        decoration: BoxDecoration(color: action, borderRadius: .circular(18)),
+        padding: .symmetric(horizontal: 15, vertical: 20),
+        child: todayTodo.isEmpty
+            ? notItem()
+            : Column(
+                children: .generate(
+                  todayTodo.length,
+                  (index) => todoCard(todayTodo[index]),
+                ),
+              ),
+      ),
+    ],
+  );
+
+  Widget notItem() => Center(
+    child: Column(
+      children: [
+        Icon(Icons.add_box, color: info, size: 50),
+        Text(
+          '오늘 등록된 할일이 없습니다',
+          style: TextStyle(color: infoText, fontSize: 24),
+        ),
+        Text(
+          '오늘 할 할일을 등록해보러 가요!',
+          style: TextStyle(color: infoText.withAlpha(180), fontSize: 18),
+        ),
+      ],
+    ),
+  );
+
+  Widget todoCard(ToDo item) => Container(
+    decoration: BoxDecoration(color: item.color, borderRadius: .circular(12)),
+    padding: .all(8),
+    child: Column(
+      crossAxisAlignment: .start,
+      children: [
+        Text(
+          item.title,
+          style: TextStyle(
+            fontWeight: .bold,
+            fontSize: 24,
+            color: Colors.white,
+          ),
+        ),
+        item.tag.isNotEmpty
+            ? ListView.builder(
+                scrollDirection: .horizontal,
+                physics: BouncingScrollPhysics(),
+                itemCount: item.tag.length,
+                itemBuilder: (context, index) => Container(
+                  padding: .symmetric(horizontal: 15, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: .circular(6),
+                  ),
+                  child: Text(
+                    item.tag[index],
+                    style: TextStyle(fontWeight: .bold),
+                  ),
+                ),
+              )
+            : SizedBox(),
+        Text(item.content),
+      ],
+    ),
+  );
+
+  Widget calendar() {
+    final dates = getCalendarDays(focusMonth);
 
     return Column(
       children: [
         Text(
           style: TextStyle(fontWeight: .bold, fontSize: 32),
-          '${now.year}, ${now.month}',
+          '${focusMonth.year}, ${focusMonth.month}',
         ),
+        SizedBox(height: 10),
         Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: .circular(40),
-          ),
+          decoration: BoxDecoration(color: action, borderRadius: .circular(18)),
           height: 350,
           child: PageView.builder(
             controller: pageController,
             onPageChanged: (value) {
-              now = DateTime(now.year, now.month + (value - 12));
+              focusMonth = DateTime(
+                focusMonth.year,
+                focusMonth.month + (value - 12),
+              );
               setState(() {});
             },
             itemBuilder: (context, index) => GridView(
-              padding: .symmetric(horizontal: 30),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 7,
               ),
@@ -87,7 +161,7 @@ class _HomePageState extends State<HomePage> {
                   child: Text(
                     '${date.day}',
                     style: TextStyle(
-                      color: date.month != now.month
+                      color: date.month != focusMonth.month
                           ? Colors.grey
                           : Colors.black,
                       fontSize: 20,
@@ -105,9 +179,20 @@ class _HomePageState extends State<HomePage> {
   AppBar appBar() => AppBar(
     backgroundColor: Colors.transparent,
     leadingWidth: 100,
-    leading: Padding(
-      padding: const EdgeInsets.only(left: 20.0),
-      child: Text('ToDo', style: TextStyle(fontWeight: .bold, fontSize: 24)),
-    ),
+    leading: Center(child: Text('ToDo', style: TextStyle(fontWeight: .bold, fontSize: 24))),
+    actionsPadding: .only(right: 20),
+    actions: [
+      GestureDetector(
+        onTap: () => Navigator.push(
+          context,
+          CupertinoPageRoute(builder: (context) => WritePage()),
+        ),
+        child: Container(
+          padding: .all(12),
+          decoration: BoxDecoration(color: action, shape: .circle),
+          child: Icon(Icons.add),
+        ),
+      ),
+    ],
   );
 }
