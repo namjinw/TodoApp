@@ -180,9 +180,13 @@ class _HomePageState extends State<HomePage> {
   // 현재 달력 PageView 자식 GridView들이 모두 같은 달만 있음
   // 12개 <= 11월달만 가짐
   // 문제: PageView를 넘길 시 달력이 넘겨지면서
-  //      다음달에 현달 내용이 보여지고 변함
-  Widget calendar(todos) {
-    final dates = getCalendarDays(focusMonth);
+  //       현달 내용이 보여지고 변함
+  // 해결: 각 달력 GridView마다 다른 달을 넣음.
+  Widget calendar(List<ToDo> todos) {
+    final calenderDates = List.generate(
+      13,
+      (index) => getCalendarDays(DateTime(today.year, today.month + index)),
+    );
 
     return Column(
       children: [
@@ -197,6 +201,8 @@ class _HomePageState extends State<HomePage> {
           padding: .all(10),
           child: PageView.builder(
             controller: pageController,
+            physics: PageScrollPhysics(),
+            itemCount: 13,
             onPageChanged: (value) {
               focusMonth = DateTime(
                 focusMonth.year,
@@ -206,25 +212,25 @@ class _HomePageState extends State<HomePage> {
               setState(() {});
               print(focusMonth);
             },
-            itemBuilder: (context, index) => GridView(
-              padding: .zero,
-              physics: NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 7,
-                mainAxisExtent: 60,
-                crossAxisSpacing: 5,
-                mainAxisSpacing: 5,
-              ),
-              children: .generate(
-                dates.length,
-                (index) => dateItem(dates[index], todos),
-              ),
-            ),
+            itemBuilder: (context, index) =>
+                calenderView(calenderDates[index], todos),
           ),
         ),
       ],
     );
   }
+
+  Widget calenderView(List<DateTime> dates, List<ToDo> todos) => GridView(
+    padding: .zero,
+    physics: NeverScrollableScrollPhysics(),
+    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 7,
+      mainAxisExtent: 60,
+      crossAxisSpacing: 5,
+      mainAxisSpacing: 5,
+    ),
+    children: .generate(dates.length, (index) => dateItem(dates[index], todos)),
+  );
 
   Widget dateItem(DateTime date, List<ToDo> todos) {
     final list = todos
@@ -262,7 +268,6 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           spacing: 6,
           crossAxisAlignment: .start,
-          mainAxisAlignment: .start,
           children: [
             Text(
               '${date.day}',
