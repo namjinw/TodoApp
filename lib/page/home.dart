@@ -1,4 +1,5 @@
 import 'package:dart_my/page/detail.dart';
+import 'package:dart_my/page/widget/day_list.dart';
 import 'package:dart_my/page/write.dart';
 import 'package:dart_my/util/color.dart';
 import 'package:dart_my/util/func.dart';
@@ -23,7 +24,7 @@ class _HomePageState extends State<HomePage> {
   DateTime selectedDate = DateTime.now(); // 선택된 날짜
   DateTime focusMonth = DateTime.now(); // 달력 날짜
 
-  final PageController pageController = PageController(initialPage: 12);
+  final PageController pageController = PageController();
 
   // 할일 날짜랑 오늘 날짜랑 비교해서 오늘 할일만 가져와 리스트로 만들기
   void checkToday() => todayTodo = ToDoController.todos.value
@@ -105,69 +106,81 @@ class _HomePageState extends State<HomePage> {
     ),
   );
 
-  Widget todoCard(ToDo item) => Container(
-    decoration: BoxDecoration(color: secondary, borderRadius: .circular(12)),
-    padding: .all(12),
-    child: Column(
-      spacing: 10,
-      crossAxisAlignment: .start,
-      children: [
-        Row(
-          spacing: 10,
-          children: [
-            Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                color: item.color,
-                borderRadius: .circular(4),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                item.title,
-                maxLines: 1,
-                overflow: .ellipsis,
-                style: TextStyle(
-                  fontWeight: .bold,
-                  fontSize: 24,
-                  color: Colors.white,
+  Widget todoCard(ToDo item) => GestureDetector(
+    onTap: () => Navigator.push(
+      context,
+      CupertinoPageRoute(builder: (context) => DetailPage(todo: item)),
+    ),
+    child: Container(
+      decoration: BoxDecoration(color: secondary, borderRadius: .circular(12)),
+      padding: .all(12),
+      child: Column(
+        spacing: 10,
+        crossAxisAlignment: .start,
+        children: [
+          Row(
+            spacing: 10,
+            children: [
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: item.color,
+                  borderRadius: .circular(4),
                 ),
               ),
-            ),
-          ],
-        ),
-        if (item.tag.isNotEmpty)
-          SingleChildScrollView(
-            scrollDirection: .horizontal,
-            physics: BouncingScrollPhysics(),
-            child: Row(
-              children: .generate(
-                item.tag.length,
-                (index) => Container(
-                  padding: .symmetric(horizontal: 15, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: primary,
-                    borderRadius: .circular(6),
-                  ),
-                  child: Text(
-                    item.tag[index],
-                    style: TextStyle(color: Colors.white, fontWeight: .bold),
+              Expanded(
+                child: Text(
+                  item.title,
+                  maxLines: 1,
+                  overflow: .ellipsis,
+                  style: TextStyle(
+                    fontWeight: .bold,
+                    fontSize: 24,
+                    color: Colors.white,
                   ),
                 ),
               ),
-            ),
+            ],
           ),
-        Container(
-          width: sizew(context),
-          padding: .all(10),
-          decoration: BoxDecoration(color: fill, borderRadius: .circular(8)),
-          child: Text(item.content),
-        ),
-      ],
+          if (item.tag.isNotEmpty)
+            SingleChildScrollView(
+              scrollDirection: .horizontal,
+              physics: BouncingScrollPhysics(),
+              child: Row(
+                children: .generate(
+                  item.tag.length,
+                  (index) => Container(
+                    padding: .symmetric(horizontal: 15, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: primary,
+                      borderRadius: .circular(6),
+                    ),
+                    child: Text(
+                      item.tag[index],
+                      style: TextStyle(color: Colors.white, fontWeight: .bold),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          Container(
+            width: sizew(context),
+            padding: .all(10),
+            decoration: BoxDecoration(color: fill, borderRadius: .circular(8)),
+            child: Text(item.content),
+          ),
+        ],
+      ),
     ),
   );
 
+  int index = 0;
+
+  // 현재 달력 PageView 자식 GridView들이 모두 같은 달만 있음
+  // 12개 <= 11월달만 가짐
+  // 문제: PageView를 넘길 시 달력이 넘겨지면서
+  //      다음달에 현달 내용이 보여지고 변함
   Widget calendar(todos) {
     final dates = getCalendarDays(focusMonth);
 
@@ -187,9 +200,11 @@ class _HomePageState extends State<HomePage> {
             onPageChanged: (value) {
               focusMonth = DateTime(
                 focusMonth.year,
-                focusMonth.month + (value - 12),
+                focusMonth.month + (index < value ? 1 : -1),
               );
+              index = value;
               setState(() {});
+              print(focusMonth);
             },
             itemBuilder: (context, index) => GridView(
               padding: .zero,
@@ -221,16 +236,20 @@ class _HomePageState extends State<HomePage> {
         )
         .toList();
     final dayTodos = list.length > 3 ? list.sublist(1, 3) : list;
+    final isToday =
+        today.year == date.year &&
+        today.month == date.month &&
+        today.day == date.day;
 
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        CupertinoPageRoute(builder: (context) => DetailPage(date: date)),
+      onTap: () => showDialog(
+        context: context,
+        builder: (context) => DayListDialog(date: date),
       ),
       child: Container(
         padding: .only(left: 6, top: 5),
         decoration: BoxDecoration(
-          color: fill,
+          color: isToday ? secondary : fill,
           borderRadius: .circular(8),
           boxShadow: [
             BoxShadow(
@@ -253,7 +272,7 @@ class _HomePageState extends State<HomePage> {
                 fontWeight: .bold,
                 color: date.month != focusMonth.month
                     ? Colors.grey
-                    : Colors.black,
+                    : (isToday ? Colors.white : Colors.black),
                 fontSize: 18,
               ),
             ),
