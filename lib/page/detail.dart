@@ -2,6 +2,7 @@ import 'package:dart_my/controller/to_do_controller.dart';
 import 'package:dart_my/model/to_do.dart';
 import 'package:dart_my/util/color.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../util/util.dart';
@@ -28,19 +29,49 @@ class _DetailPageState extends State<DetailPage> {
   Widget content() => SingleChildScrollView(
     padding: .symmetric(vertical: 30, horizontal: 20),
     physics: BouncingScrollPhysics(),
-    child: Container(
-      padding: .all(20),
-      decoration: BoxDecoration(color: action, borderRadius: .circular(12)),
-      child: Column(
-        spacing: 20,
-        crossAxisAlignment: .start,
-        children: [
-          title(),
-          if (widget.todo.tag.isNotEmpty) tagList(),
-          todoContent(),
-        ],
-      ),
+    child: Column(
+      spacing: 10,
+      children: [
+        options(),
+        Container(
+          padding: .all(20),
+          decoration: BoxDecoration(color: action, borderRadius: .circular(12)),
+          child: Column(
+            spacing: 20,
+            crossAxisAlignment: .start,
+            children: [
+              title(),
+              if (widget.todo.tag.isNotEmpty) tagList(),
+              todoContent(),
+            ],
+          ),
+        ),
+      ],
     ),
+  );
+
+  Widget options() => Row(
+    mainAxisAlignment: .end,
+    spacing: 6,
+    children: [
+      optionButton('저장', () {}),
+      optionButton('복사', () {
+        // 클립 보드 텍스트 복사
+        Clipboard.setData(ClipboardData(text: widget.todo.content));
+      }),
+    ],
+  );
+
+  Widget optionButton(text, ontap) => ActionChip(
+    onPressed: ontap,
+    padding: .symmetric(horizontal: 10, vertical: 5),
+    label: Text(
+      text,
+      style: TextStyle(fontWeight: .bold, fontSize: 18, color: Colors.white),
+    ),
+    shape: RoundedRectangleBorder(borderRadius: .circular(30)),
+    backgroundColor: primary,
+    side: BorderSide(color: Colors.transparent),
   );
 
   Widget todoContent() => Column(

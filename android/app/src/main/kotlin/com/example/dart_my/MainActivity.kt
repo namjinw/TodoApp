@@ -9,9 +9,23 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
 
         // 파일 저장, 알림 예약 등 네이티브 코드 구현
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kotlin").setMethodCallHandler { call, result ->
-            if (call.method == "save") {
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "kotlin"
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "save" -> {
+                    val text = call.argument<String>("text")!!
+                }
 
+                "start-server" -> {
+
+                }
+
+                "notification" -> {
+                    val title = call.argument<String>("text")!!
+                    val content = call.argument<String>("text")!!
+                }
             }
         }
     }
