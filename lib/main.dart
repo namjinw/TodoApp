@@ -1,11 +1,14 @@
 import 'package:dart_my/controller/to_do_controller.dart';
+import 'package:dart_my/core/storage.dart';
 import 'package:dart_my/page/home.dart';
 import 'package:dart_my/util/util.dart';
 import 'package:flutter/material.dart';
 
 Future<void> main() async {
 
-  await ToDoController.init();
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await StorageCore.init();
 
   runApp(const MyApp());
 }

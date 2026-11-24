@@ -1,4 +1,5 @@
 import 'package:dart_my/page/detail.dart';
+import 'package:dart_my/page/setting.dart';
 import 'package:dart_my/page/widget/day_list.dart';
 import 'package:dart_my/page/write.dart';
 import 'package:dart_my/util/color.dart';
@@ -190,9 +191,28 @@ class _HomePageState extends State<HomePage> {
 
     return Column(
       children: [
-        Text(
-          style: TextStyle(fontWeight: .bold, fontSize: 32),
-          '${focusMonth.year}, ${focusMonth.month}',
+        Stack(
+          alignment: .center,
+          children: [
+            Text(
+              style: TextStyle(fontWeight: .bold, fontSize: 32),
+              '${focusMonth.year}, ${focusMonth.month}',
+            ),
+            Align(
+              alignment: .centerRight,
+              child: GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  CupertinoPageRoute(builder: (context) => WritePage()),
+                ),
+                child: Container(
+                  padding: .all(8),
+                  decoration: BoxDecoration(color: action, shape: .circle),
+                  child: Icon(Icons.add),
+                ),
+              ),
+            ),
+          ],
         ),
         SizedBox(height: 10),
         Container(
@@ -304,22 +324,19 @@ class _HomePageState extends State<HomePage> {
 
   AppBar appBar() => AppBar(
     backgroundColor: Colors.transparent,
+    surfaceTintColor: Colors.transparent,
     leadingWidth: 100,
     leading: Center(
       child: Text('ToDo', style: TextStyle(fontWeight: .bold, fontSize: 24)),
     ),
-    actionsPadding: .only(right: 20),
+    actionsPadding: .only(right: 8),
     actions: [
-      GestureDetector(
-        onTap: () => Navigator.push(
+      IconButton(
+        onPressed: () => Navigator.push(
           context,
-          CupertinoPageRoute(builder: (context) => WritePage()),
+          CupertinoPageRoute(builder: (context) => SettingPage()),
         ),
-        child: Container(
-          padding: .all(12),
-          decoration: BoxDecoration(color: action, shape: .circle),
-          child: Icon(Icons.add),
-        ),
+        icon: Icon(Icons.settings, size: 30, color: primary),
       ),
     ],
   );

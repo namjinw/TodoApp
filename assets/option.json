@@ -1,0 +1,8 @@
+[
+  {
+    "id" : "foreground",
+    "isActive" : false,
+    "title" : "포그라운드 서비스 시작",
+    "explanation" :  "오늘으 할일 세개를 알림을 표시합니다."
+  }
+]

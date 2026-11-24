@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dart_my/core/storage.dart';
 import 'package:dart_my/model/to_do.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,13 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ToDoController {
   static ValueNotifier<List<ToDo>> todos = ValueNotifier([]);
   static ValueNotifier<List<String>> tags = ValueNotifier([]);
-  static late SharedPreferences prefs;
-
-  static Future<void> init() async {
-    prefs = await SharedPreferences.getInstance();
-
-    await getTodoInfo();
-  }
 
   static Future<void> addElement(dynamic e) async {
     if (e is ToDo) {
@@ -21,39 +15,41 @@ class ToDoController {
     } else {
       ToDoController.tags.value.add(e);
     }
-    await ToDoController.saveTodosInfo();
-    await ToDoController.getTodoInfo();
+    StorageCore.saveValues();
+    StorageCore.getValues();
   }
 
   static Future<void> deleteTag(String name) async {
     tags.value.remove(name);
-    await saveTodosInfo();
-    await getTodoInfo();
+    StorageCore.saveValues();
+    StorageCore.getValues();
   }
 
   static Future<void> deleteTodo(int id) async {
     todos.value.removeWhere((e) => e.id == id);
-    await saveTodosInfo();
-    await getTodoInfo();
+    StorageCore.saveValues();
+    StorageCore.getValues();
   }
 
   static Future<void> saveTodosInfo() async {
-    await prefs.setString(
+    await StorageCore.saveObject(
       'todos',
-      jsonEncode(todos.value.map((e) => e.toJson()).toList()),
+      todos.value.map((e) => e.toJson()).toList(),
     );
-    await prefs.setString(
+    await StorageCore.saveObject(
       'tags',
-      jsonEncode(tags.value.map((e) => e.toString()).toList()),
+      tags.value.map((e) => e.toString()).toList(),
     );
   }
 
   static Future<void> getTodoInfo() async {
-    todos.value = loadJson(prefs.getString('todos'), (e) => ToDo.fromJson(e));
-    tags.value = loadJson(prefs.getString('tags'), (e) => e.toString());
+    todos.value = StorageCore.loadJson(
+      StorageCore.prefs.getString('todos'),
+      (e) => ToDo.fromJson(e),
+    );
+    tags.value = StorageCore.loadJson(
+      StorageCore.prefs.getString('tags'),
+      (e) => e.toString(),
+    );
   }
-
-  static List<T> loadJson<T>(key, T Function(dynamic) fromJson) => key == null
-      ? []
-      : (jsonDecode(key) as List<dynamic>).map(fromJson).toList();
 }
