@@ -31,7 +31,7 @@ class NotificationHelper(private val context: Context) {
         return NotificationCompat.Builder(context, NotificationId)
             .setSmallIcon(R.drawable.launch_background)
             .setContentTitle(title)
-            .setContentText(content)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(content))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
     }
 

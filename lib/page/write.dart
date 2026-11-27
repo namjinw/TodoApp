@@ -3,6 +3,8 @@ import 'package:dart_my/model/to_do.dart';
 import 'package:dart_my/page/widget/delete_item.dart';
 import 'package:dart_my/page/widget/register_tag.dart';
 import 'package:dart_my/util/color.dart';
+import 'package:dart_my/util/media.dart';
+import 'package:dart_my/util/native.dart';
 import 'package:dart_my/util/util.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -33,34 +35,36 @@ class _WritePageState extends State<WritePage> {
     padding: .only(bottom: MediaQuery.viewInsetsOf(context).bottom),
     child: Padding(
       padding: .symmetric(vertical: 20, horizontal: 15),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: .circular(12),
-        ),
-        padding: .all(15),
-        child: Form(
-          key: key,
-          child: Column(
-            spacing: 30,
-            children: [
-              input('제목', '제목을 입력해주세요', title, (value) {
-                if (value == null || value.isEmpty) {
-                  return '제목을 입력해주세요';
-                }
-                return null;
-              }),
-              insertTag(),
-              input('내용', '내용을 입력해주세요', isOne: false, content, (value) {
-                if (value == null || value.isEmpty) {
-                  return '제목을 입력해주세요';
-                }
-                return null;
-              }),
-              colorPick(),
-              datePick(),
-              button(),
-            ],
+      child: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: .circular(12),
+          ),
+          padding: .all(15),
+          child: Form(
+            key: key,
+            child: Column(
+              spacing: 30,
+              children: [
+                input('제목', '제목을 입력해주세요', title, (value) {
+                  if (value == null || value.isEmpty) {
+                    return '제목을 입력해주세요';
+                  }
+                  return null;
+                }),
+                insertTag(),
+                input('내용', '내용을 입력해주세요', isOne: false, content, (value) {
+                  if (value == null || value.isEmpty) {
+                    return '제목을 입력해주세요';
+                  }
+                  return null;
+                }),
+                colorPick(),
+                datePick(),
+                button(),
+              ],
+            ),
           ),
         ),
       ),
@@ -70,6 +74,9 @@ class _WritePageState extends State<WritePage> {
   Widget button() => GestureDetector(
     onTap: () async {
       if (key.currentState!.validate()) {
+        final status = await statusForeground();
+        print(status);
+        if (status) startForground();
         await ToDoController.addElement(
           ToDo(
             id: DateTime.now().microsecondsSinceEpoch,
@@ -81,7 +88,6 @@ class _WritePageState extends State<WritePage> {
             createdAt: DateTime.now(),
           ),
         );
-        print(ToDoController.todos.value);
         Navigator.pop(context);
         snack(context, '할일이 등록 되었습니다!', Icons.celebration_outlined);
       }
@@ -104,7 +110,7 @@ class _WritePageState extends State<WritePage> {
     children: [
       Align(
         alignment: .centerLeft,
-        child: Text('날짜 선택', style: TextStyle(fontSize: 24, fontWeight: .bold)),
+        child: Text('날짜 선택', style: TextStyle(fontSize: subTitleSize, fontWeight: .bold)),
       ),
       Row(
         children: [
@@ -171,7 +177,7 @@ class _WritePageState extends State<WritePage> {
     children: [
       Align(
         alignment: .centerLeft,
-        child: Text('색상 선택', style: TextStyle(fontSize: 24, fontWeight: .bold)),
+        child: Text('색상 선택', style: TextStyle(fontSize: subTitleSize, fontWeight: .bold)),
       ),
       Wrap(
         spacing: 10,
@@ -186,8 +192,8 @@ class _WritePageState extends State<WritePage> {
               setState(() {});
             },
             child: Container(
-              width: sizew(context) * 0.15,
-              height: sizew(context) * 0.15,
+              width: sizew(context) * 0.12,
+              height: sizew(context) * 0.12,
               decoration: BoxDecoration(color: c, borderRadius: .circular(4)),
               child: Icon(
                 Icons.check,
@@ -218,7 +224,7 @@ class _WritePageState extends State<WritePage> {
           alignment: .centerLeft,
           child: Text(
             '태그 등록',
-            style: TextStyle(fontSize: 24, fontWeight: .bold),
+            style: TextStyle(fontSize: subTitleSize, fontWeight: .bold),
           ),
         ),
         SingleChildScrollView(
@@ -302,7 +308,7 @@ class _WritePageState extends State<WritePage> {
     spacing: 8,
     crossAxisAlignment: .start,
     children: [
-      Text(text, style: TextStyle(fontSize: 24, fontWeight: .bold)),
+      Text(text, style: TextStyle(fontSize: subTitleSize, fontWeight: .bold)),
       TextFormField(
         maxLines: isOne ? 1 : null,
         controller: value,
@@ -319,6 +325,6 @@ class _WritePageState extends State<WritePage> {
       onTap: () => Navigator.pop(context),
       child: Icon(Icons.arrow_back),
     ),
-    title: Text('할일 생성', style: TextStyle(fontSize: 32, fontWeight: .bold)),
+    title: Text('할일 생성', style: TextStyle(fontSize: titleSize, fontWeight: .bold)),
   );
 }

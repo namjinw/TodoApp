@@ -2,6 +2,7 @@ import 'package:dart_my/controller/setting_controller.dart';
 import 'package:dart_my/controller/to_do_controller.dart';
 import 'package:dart_my/model/option.dart';
 import 'package:dart_my/util/color.dart';
+import 'package:dart_my/util/media.dart';
 import 'package:flutter/material.dart';
 
 class SettingPage extends StatefulWidget {
@@ -49,16 +50,15 @@ class _SettingPageState extends State<SettingPage> {
       value: o.isActive,
       onChanged: (value) {
         o.isActive = !o.isActive;
-        print(o.id);
-        if (o.isActive) SettingController.funcs(o.id);
+        SettingController.funcs(o.id, o.isActive);
         setState(() {});
       },
       activeColor: primary,
       title: Text(
         o.title,
-        style: TextStyle(fontSize: 18, fontWeight: .bold, color: primary),
+        style: TextStyle(fontSize: dateSellTextSize, fontWeight: .bold, color: primary),
       ),
-      subtitle: Text(o.explanation, style: TextStyle(color: secondary),),
+      subtitle: Text(o.explanation, style: TextStyle(color: secondary, fontSize: textSize),),
     ),
   );
 
@@ -67,7 +67,7 @@ class _SettingPageState extends State<SettingPage> {
     surfaceTintColor: Colors.transparent,
     title: Text(
       '설정',
-      style: TextStyle(color: primary, fontSize: 28, fontWeight: .bold),
+      style: TextStyle(color: primary, fontSize: titleSize, fontWeight: .bold),
     ),
     centerTitle: true,
     leadingWidth: 60,

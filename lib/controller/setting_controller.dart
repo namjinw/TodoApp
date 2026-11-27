@@ -9,10 +9,10 @@ import 'package:flutter/services.dart';
 class SettingController {
   static ValueNotifier<List<Option>> options = ValueNotifier([]);
 
-  static Future<void> funcs(String id) async {
+  static Future<void> funcs(String id, bool active) async {
     switch (id) {
       case 'foreground':
-        await startForground();
+        active ? await startForground() : await stopForground();
       default:
         print('미확인 설정');
     }

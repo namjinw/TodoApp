@@ -1,6 +1,7 @@
 import 'package:dart_my/controller/to_do_controller.dart';
 import 'package:dart_my/model/to_do.dart';
 import 'package:dart_my/util/color.dart';
+import 'package:dart_my/util/media.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -154,7 +155,7 @@ class _DetailPageState extends State<DetailPage> {
     ),
     title: Text(
       '${DateFormat('y년 M월 d일').format(widget.todo.date)}',
-      style: TextStyle(fontSize: 32, fontWeight: .bold),
+      style: TextStyle(fontSize: titleSize, fontWeight: .bold),
     ),
   );
 }

@@ -15,19 +15,19 @@ class ToDoController {
     } else {
       ToDoController.tags.value.add(e);
     }
-    StorageCore.saveValues();
+    await StorageCore.saveValues();
     StorageCore.getValues();
   }
 
   static Future<void> deleteTag(String name) async {
     tags.value.remove(name);
-    StorageCore.saveValues();
+    await StorageCore.saveValues();
     StorageCore.getValues();
   }
 
   static Future<void> deleteTodo(int id) async {
     todos.value.removeWhere((e) => e.id == id);
-    StorageCore.saveValues();
+    await StorageCore.saveValues();
     StorageCore.getValues();
   }
 

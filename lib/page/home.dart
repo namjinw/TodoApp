@@ -4,6 +4,7 @@ import 'package:dart_my/page/widget/day_list.dart';
 import 'package:dart_my/page/write.dart';
 import 'package:dart_my/util/color.dart';
 import 'package:dart_my/util/func.dart';
+import 'package:dart_my/util/media.dart';
 import 'package:dart_my/util/util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -42,6 +43,13 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     ToDoController.todos.addListener(checkToday);
     checkToday();
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      titleSize = (sizew(context) * 0.1).clamp(30, 32);
+      subTitleSize = (sizew(context) * 0.08).clamp(22, 36);
+      dateSellTextSize = (sizew(context) * 0.04).clamp(14, 16);
+      textSize = (sizew(context) * 0.02).clamp(10, 14);
+    },);
   }
 
   @override
@@ -55,7 +63,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget content() => SafeArea(
     child: SingleChildScrollView(
-      padding: .symmetric(horizontal: 15),
+      padding: .symmetric(horizontal: 15, vertical: 20),
       child: ValueListenableBuilder(
         valueListenable: ToDoController.todos,
         builder: (context, value, child) => Column(
@@ -72,7 +80,7 @@ class _HomePageState extends State<HomePage> {
     children: [
       Text(
         '${DateFormat('M월 d일').format(today)}',
-        style: TextStyle(fontSize: 32, fontWeight: .bold, color: primary),
+        style: TextStyle(fontSize: titleSize, fontWeight: .bold, color: primary),
       ),
       SizedBox(height: 12),
       Container(
@@ -97,11 +105,11 @@ class _HomePageState extends State<HomePage> {
         Icon(Icons.add_box, color: info, size: 50),
         Text(
           '오늘 등록된 할일이 없습니다',
-          style: TextStyle(color: infoText, fontSize: 24),
+          style: TextStyle(color: infoText, fontSize: subTitleSize),
         ),
         Text(
           '오늘 할 할일을 등록해보러 가요!',
-          style: TextStyle(color: infoText.withAlpha(180), fontSize: 18),
+          style: TextStyle(color: infoText.withAlpha(180), fontSize: dateSellTextSize),
         ),
       ],
     ),
@@ -137,7 +145,7 @@ class _HomePageState extends State<HomePage> {
                   overflow: .ellipsis,
                   style: TextStyle(
                     fontWeight: .bold,
-                    fontSize: 24,
+                    fontSize: subTitleSize,
                     color: Colors.white,
                   ),
                 ),
@@ -195,7 +203,7 @@ class _HomePageState extends State<HomePage> {
           alignment: .center,
           children: [
             Text(
-              style: TextStyle(fontWeight: .bold, fontSize: 32),
+              style: TextStyle(fontWeight: .bold, fontSize: titleSize),
               '${focusMonth.year}, ${focusMonth.month}',
             ),
             Align(
@@ -217,7 +225,11 @@ class _HomePageState extends State<HomePage> {
         SizedBox(height: 10),
         Container(
           decoration: BoxDecoration(color: action, borderRadius: .circular(18)),
-          height: 410,
+          height: sizeh(context) * 0.4,
+          constraints: BoxConstraints(
+            minHeight: 240,
+            maxHeight: 400
+          ),
           padding: .all(10),
           child: PageView.builder(
             controller: pageController,
@@ -245,7 +257,7 @@ class _HomePageState extends State<HomePage> {
     physics: NeverScrollableScrollPhysics(),
     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
       crossAxisCount: 7,
-      mainAxisExtent: 60,
+      mainAxisExtent: (sizew(context) * 0.12).clamp(20, 70),
       crossAxisSpacing: 5,
       mainAxisSpacing: 5,
     ),
@@ -273,7 +285,7 @@ class _HomePageState extends State<HomePage> {
         builder: (context) => DayListDialog(date: date),
       ),
       child: Container(
-        padding: .only(left: 6, top: 5),
+        padding: .only(left: sizew(context) * 0.015, top: sizew(context) * 0.004),
         decoration: BoxDecoration(
           color: isToday ? secondary : fill,
           borderRadius: .circular(8),
@@ -286,32 +298,34 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         child: Column(
-          spacing: 6,
+          spacing: sizew(context) * 0.001,
           crossAxisAlignment: .start,
           children: [
             Text(
               '${date.day}',
-              overflow: .ellipsis,
+              overflow: .fade,
               maxLines: 1,
               style: TextStyle(
                 fontWeight: .bold,
                 color: date.month != focusMonth.month
                     ? Colors.grey
                     : (isToday ? Colors.white : Colors.black),
-                fontSize: 18,
+                fontSize: dateSellTextSize,
               ),
             ),
-            Row(
-              crossAxisAlignment: .start,
-              spacing: 3,
-              children: .generate(
-                dayTodos.length,
-                (index) => Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: dayTodos[index].color,
-                    borderRadius: .circular(2),
+            Expanded(
+              child: Row(
+                crossAxisAlignment: .start,
+                spacing: 3,
+                children: .generate(
+                  dayTodos.length,
+                  (index) => Container(
+                    width: sizew(context) * 0.02,
+                    height: sizew(context) * 0.02,
+                    decoration: BoxDecoration(
+                      color: dayTodos[index].color,
+                      borderRadius: .circular(2),
+                    ),
                   ),
                 ),
               ),
@@ -327,7 +341,7 @@ class _HomePageState extends State<HomePage> {
     surfaceTintColor: Colors.transparent,
     leadingWidth: 100,
     leading: Center(
-      child: Text('ToDo', style: TextStyle(fontWeight: .bold, fontSize: 24)),
+      child: Text('ToDo', style: TextStyle(fontWeight: .bold, fontSize: subTitleSize)),
     ),
     actionsPadding: .only(right: 8),
     actions: [

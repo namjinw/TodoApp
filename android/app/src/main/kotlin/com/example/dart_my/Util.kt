@@ -8,6 +8,7 @@ import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
 
 object Util {
+    var isActiveService = false;
 
     // 런타임 권한 요청 함수
     fun requestPermission(
